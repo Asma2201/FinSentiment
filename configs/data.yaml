@@ -1,0 +1,12 @@
+# Paramètres de préparation des données.
+# Les chemins sont relatifs à la racine du projet.
+
+fpb:
+  raw_dir: data/raw/fpb/FinancialPhraseBank-v1.0
+  agreement: "75"          # 50 | 66 | 75 | all  (accord minimum entre annotateurs)
+  split:                   # proportions, somme = 1
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  seed: 42                 # rend le split reproductible
+  output: data/processed/fpb.parquet

@@ -1,0 +1,9 @@
+.venv/
+__pycache__/
+*.egg-info/
+data/raw/
+data/processed/
+mlruns/
+mlartifacts/
+mlflow.db
+.ipynb_checkpoints/
