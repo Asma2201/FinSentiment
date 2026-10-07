@@ -1,1 +1,20 @@
-# Config baseline — à remplir ensemble
+# Baseline TF-IDF + Régression Logistique.
+# Les chemins sont relatifs à la racine du projet.
+
+data: data/processed/fpb.parquet   # sortie de prepare_fpb (schéma commun)
+seed: 42
+
+tfidf:
+  word:                    # n-grammes de mots : "profit", "profit up"...
+    ngram_range: [1, 2]
+    min_df: 2              # ignore les termes vus dans un seul document du train
+    sublinear_tf: true     # 1 + log(tf) : un mot répété compte moins que proportionnellement
+  char:                    # n-grammes de caractères DANS les mots : "incre", "creas"...
+    ngram_range: [2, 5]
+    min_df: 2
+    sublinear_tf: true
+
+logreg:
+  C: 1.0                   # inverse de la régularisation : petit C = modèle plus simple
+  class_weight: balanced   # compense la sur-représentation de "neutral"
+  max_iter: 2000           # assez d'itérations pour converger avec beaucoup de features
