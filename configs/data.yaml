@@ -10,3 +10,18 @@ fpb:
     test: 0.15
   seed: 42                 # rend le split reproductible
   output: data/processed/fpb.parquet
+
+fiqa:
+  raw_dir: data/raw/fiqa_sa
+  # Score continu [-1, 1] -> 3 classes :
+  #   score < negative -> negative ; score > positive -> positive ; sinon neutral.
+  # Frontières du GMM à 3 composantes (-0.07 / +0.27) et de k-means (-0.13 / +0.33), arrondies,
+  # confirmées par lecture (notebook 02, section B4). Choisies AVANT toute évaluation de modèle.
+  thresholds:
+    negative: -0.1
+    positive: 0.3
+  # Variantes pour l'analyse de sensibilité : évaluées plus tard, jamais utilisées pour choisir.
+  sensitivity:
+    symmetric_0.2: [-0.2, 0.2]
+    strict: [-0.05, 0.2]
+  output: data/processed/fiqa.parquet
