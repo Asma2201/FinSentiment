@@ -11,10 +11,10 @@ from pathlib import Path
 import mlflow
 import pandas as pd
 import yaml
-from sklearn.model_selection import train_test_split
 
 from finsent import ROOT, tracking
-from finsent.data.schema import COLUMNS, LABEL2ID, LABELS, validate
+from finsent.data.common import remove_conflicts, remove_duplicates, stratified_split, to_schema
+from finsent.data.schema import LABELS
 
 AGREEMENT_FILES = {
     "50": "Sentences_50Agree.txt",
@@ -35,39 +35,6 @@ def load_fpb(path: Path) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:
-    """Garde une seule fois chaque (phrase, label) identique."""
-    return df.drop_duplicates(subset=["text", "label"]).reset_index(drop=True)
-
-
-def remove_conflicts(df: pd.DataFrame) -> pd.DataFrame:
-    """Supprime les phrases présentes avec plusieurs labels différents."""
-    conflicting = df["text"].duplicated(keep=False)
-    return df[~conflicting].reset_index(drop=True)
-
-
-def stratified_split(df: pd.DataFrame, ratios: dict, seed: int) -> pd.DataFrame:
-    """Découpe en train / val / test en gardant la même proportion de classes partout."""
-    train, rest = train_test_split(
-        df, train_size=ratios["train"], stratify=df["label"], random_state=seed
-    )
-    # `rest` = val + test ; on le recoupe selon leurs proportions relatives
-    val_share = ratios["val"] / (ratios["val"] + ratios["test"])
-    val, test = train_test_split(
-        rest, train_size=val_share, stratify=rest["label"], random_state=seed
-    )
-    return pd.concat(
-        [train.assign(split="train"), val.assign(split="val"), test.assign(split="test")],
-        ignore_index=True,
-    )
-
-
-def to_schema(df: pd.DataFrame) -> pd.DataFrame:
-    """Ajoute les colonnes du schéma commun et vérifie le résultat."""
-    df = df.assign(label_id=df["label"].map(LABEL2ID), lang="en", domain="news")
-    return validate(df[COLUMNS])
-
-
 def main() -> None:
     cfg = yaml.safe_load((ROOT / "configs" / "data.yaml").read_text(encoding="utf-8"))["fpb"]
     agreement = str(cfg["agreement"])
@@ -82,7 +49,7 @@ def main() -> None:
     # 4. Split stratifié
     df = stratified_split(clean, cfg["split"], cfg["seed"])
     # 5. Schéma commun
-    df = to_schema(df)
+    df = to_schema(df, lang="en", domain="news")
     # 6. Sauvegarde
     out_path.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(out_path, index=False)

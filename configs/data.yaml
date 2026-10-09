@@ -11,6 +11,16 @@ fpb:
   seed: 42                 # rend le split reproductible
   output: data/processed/fpb.parquet
 
+tweets:
+  raw_dir: data/raw/twitter_financial_news
+  files: [sent_train.csv, sent_valid.csv]  # fusionnés puis redécoupés (option B, notebook 02)
+  split:                   # même découpage que FPB
+    train: 0.70
+    val: 0.15
+    test: 0.15
+  seed: 42
+  output: data/processed/tweets.parquet
+
 fiqa:
   raw_dir: data/raw/fiqa_sa
   # Score continu [-1, 1] -> 3 classes :
