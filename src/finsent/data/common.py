@@ -5,10 +5,27 @@ nettoyage (doublons, conflits) AVANT le split, pour qu'une même phrase
 ne puisse pas se retrouver en train ET en test.
 """
 
+import re
+
+import ftfy
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
 from finsent.data.schema import COLUMNS, LABEL2ID, validate
+
+# Liens : avec schéma (https://t.co/...) ou sans (www.site.com)
+URL = re.compile(r"https?://\S+|www\.\S+")
+
+
+def clean_text(text: str) -> str:
+    """Couche 1 : retire le bruit technique (encodage cassé â€¦ -> …, URL, espaces multiples).
+
+    Ne touche pas au langage (majuscules, cashtags, mentions, emojis, apostrophes) :
+    c'est le rôle de chaque modèle.
+    """
+    text = ftfy.fix_encoding(text)  # répare seulement l'encodage (pas fix_text, trop large)
+    text = URL.sub(" ", text)
+    return " ".join(text.split())
 
 
 def remove_duplicates(df: pd.DataFrame) -> pd.DataFrame:

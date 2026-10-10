@@ -12,23 +12,20 @@ Lancement (depuis la racine du projet) :
     python -m finsent.data.prepare_tweets
 """
 
-import re
-
 import ftfy
 import mlflow
 import pandas as pd
 import yaml
 
 from finsent import ROOT, tracking
-from finsent.data.common import remove_conflicts, remove_duplicates, stratified_split, to_schema
+from finsent.data.common import (URL, clean_text, remove_conflicts, remove_duplicates,
+                                 stratified_split, to_schema)
 from finsent.data.schema import LABELS
 
 # Labels du jeu d'origine (README) : 0 = Bearish, 1 = Bullish, 2 = Neutral.
 # Attention : l'ordre n'est PAS celui de notre schéma, on traduit donc par NOM.
 RAW_NAMES = {0: "Bearish", 1: "Bullish", 2: "Neutral"}
 NAME2LABEL = {"Bearish": "negative", "Bullish": "positive", "Neutral": "neutral"}
-
-URL = re.compile(r"https?://\S+")
 
 
 def load_tweets(raw_dir, files: list[str]) -> pd.DataFrame:
@@ -42,13 +39,6 @@ def map_labels(df: pd.DataFrame) -> pd.DataFrame:
     if unknown:
         raise ValueError(f"labels d'origine inconnus : {unknown}")
     return df.assign(label=df["label"].map(RAW_NAMES).map(NAME2LABEL))
-
-
-def clean_text(text: str) -> str:
-    """Retire le bruit technique : encodage cassé (â€¦ -> …), URL, espaces multiples."""
-    text = ftfy.fix_encoding(text)  # répare seulement l'encodage, ne touche pas au reste
-    text = URL.sub(" ", text)
-    return " ".join(text.split())
 
 
 def main() -> None:
