@@ -1,0 +1,74 @@
+# Collecte de phrases candidates pour le jeu de test FR / AR tunisien (cases C et D).
+# Utilisé par : python -m finsent.data.collect_candidates
+# Aucun label n'est produit : on choisit les phrases (colonne keep), on annote plus tard.
+
+output_dir: data/annotation/candidats   # un fichier candidats_AAAA-MM-JJ.csv par lancement
+collecte: data/annotation/collecte.csv  # phrases déjà gardées (pour les id et les doublons)
+
+user_agent: "FinSentiment-research/0.1 (projet academique, collecte de phrases)"
+min_delay: 3              # secondes entre deux pages d'un même site (plus si robots.txt l'exige)
+min_date: "2023-01-01"    # articles plus anciens ignorés (guide §5 : 2023 à 2026)
+max_articles: 30          # articles lus par source et par lancement
+max_candidates: 5         # phrases proposées par article (tu en gardes au plus 3)
+
+sentence:                 # guide §4
+  min_words: 8
+  max_words: 60
+
+# Une phrase doit contenir un chiffre OU un de ces mots (guide §4, règle 3 : un fait).
+# Comparaison en minuscules, sur une partie du mot : "export" attrape "exportations".
+keywords:
+  fr: [hausse, baisse, recul, repli, progress, augment, diminu, croissance, chute, bénéfice,
+       perte, déficit, excédent, chiffre d'affaires, résultat, revenu, dividende, marge,
+       bourse, tunindex, banque, bancaire, crédit, dépôt, épargne, inflation, taux, export,
+       import, investissement, dette, endettement, capital, action, bct, budget, financ,
+       production, emploi, prix, recette, assurance]
+  ar: [ارتفاع, ارتفع, انخفاض, انخفض, تراجع, نمو, زيادة, أرباح, ربح, خسائر, خسارة, عجز, فائض,
+       رقم المعاملات, مداخيل, إيرادات, عائدات, بورصة, توننداكس, بنك, البنك, قروض, ودائع,
+       ادخار, تضخم, نسبة, صادرات, واردات, استثمار, ديون, مديونية, رأس المال, أسهم, ميزانية,
+       تمويل, إنتاج, أسعار, دينار, مليون, مليار, تأمين]
+
+# type: feed    -> flux RSS (liste des derniers articles)
+# type: listing -> page de rubrique ; on garde les liens qui correspondent à link_pattern
+# Non automatisables (à collecter à la main) : tap.info.tn (page construite en JavaScript),
+# kapitalis.com (rubrique introuvable), assabah.com.tn (site injoignable), bvmt.com.tn,
+# alchourouk.com (voir plus bas).
+sources:
+  - name: ilboursa
+    lang: fr
+    type: listing
+    url: https://www.ilboursa.com/marches/actualites_bourse_tunis
+    link_pattern: '^/marches/[^/]+_\d+$'
+  - name: tustex
+    lang: fr
+    type: feed
+    url: https://www.tustex.com/rss.xml
+  - name: lapresse
+    lang: fr
+    type: feed
+    url: https://www.lapresse.tn/category/economie/feed/
+  - name: webmanagercenter
+    lang: fr
+    type: listing
+    url: https://www.webmanagercenter.com/category/economie/
+    link_pattern: 'webmanagercenter\.com/\d{4}/\d{2}/\d{2}/\d+/'
+  - name: leconomistemaghrebin
+    lang: fr
+    type: feed
+    url: https://www.leconomistemaghrebin.com/category/economie/feed/
+  - name: africanmanager
+    lang: fr
+    type: feed
+    url: https://africanmanager.com/feed/
+  - name: ilboursa_ar
+    lang: ar
+    type: listing
+    url: https://www.ilboursa.com/ar
+    link_pattern: '^/ar/[^/]+_\d+$'
+  # Désactivée : trafilatura n'extrait pas le corps des articles (seulement des blocs latéraux)
+  # et la rubrique renvoie surtout des liens hors économie. À collecter à la main.
+  # - name: alchourouk
+  #   lang: ar
+  #   type: listing
+  #   url: https://www.alchourouk.com/اقتصاد
+  #   link_pattern: '^/article/'

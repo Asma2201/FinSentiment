@@ -7,3 +7,4 @@ mlruns/
 mlartifacts/
 mlflow.db
 .ipynb_checkpoints/
+data/annotation/candidats/
